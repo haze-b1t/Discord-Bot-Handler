@@ -1,6 +1,42 @@
+# -*- Dependencies Installer -*-
+
+import subprocess
+import sys
+import os
+import importlib
+
+def install_requirements(requirements_file="requirements.txt"):
+    if not os.path.exists(requirements_file):
+        print(f"[!] {requirements_file} not found.")
+        return
+
+    with open(requirements_file, "r") as file:
+        requirements = [r.strip() for r in file.readlines() if r.strip()]
+
+    missing = []
+
+    for req in requirements:
+        # Extract importable module name (best guess)
+        # e.g. "discord.py" → "discord"
+        pkg = req.split("==")[0].replace("-", "_").split(".")[0]
+
+        try:
+            importlib.import_module(pkg)
+        except ImportError:
+            missing.append(req)
+
+    if missing:
+        print(f"[+] Installing missing packages: {missing}")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", *missing])
+    else:
+        print("[+] All dependencies already installed.")
+
+install_requirements()
+
+# -=- Bot Client -=- #
+
 import asyncio
 import discord
-import os
 import time
 from discord.ext import commands
 from datetime import datetime
@@ -18,7 +54,7 @@ intents.message_content = True
 client = commands.Bot(command_prefix='!', intents=intents)
 
 clientName = "your_name"
-version = "25w49a"
+version = "25w49b"
 authors = "haze (@haze_b1t)"
 
 bot_running = False
